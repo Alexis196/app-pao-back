@@ -90,3 +90,30 @@ export const eliminarJoya = async (req, res, next) => {
         next(err);
     }
 };
+
+export const obtenerUnaJoya = async (req, res, next) => {
+    try {
+        const { _id } = req.params;
+
+        // Validar formato de ObjectId
+        if (!mongoose.Types.ObjectId.isValid(_id)) {
+            return res.status(400).json({ message: "El ID proporcionado no es válido" });
+        }
+
+        // Buscar por ID directamente
+        const joya = await Joya.findById(_id);
+
+        if (!joya) {
+            return res.status(404).json({ message: "No se encontró la joya" });
+        }
+
+        res.status(200).json({
+            message: "Joya encontrada correctamente",
+            joya
+        });
+
+    } catch (err) {
+        console.error("Error al encontrar la joya:", err.message);
+        next(err);
+    }
+};

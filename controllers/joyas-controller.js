@@ -142,3 +142,33 @@ export const aumentarPrecios = async (req, res, next) => {
         next(err);
     }
 };
+
+export const bajarPrecios = async (req, res, next) => {
+  try {
+    const { porcentaje } = req.body;
+
+    if (!porcentaje || isNaN(porcentaje)) {
+      return res.status(400).json({ message: "Debe enviar un número válido en 'porcentaje'" });
+    }
+
+    const factor = 1 - porcentaje / 100;
+
+    if (factor <= 0) {
+      return res.status(400).json({ message: "El porcentaje es demasiado alto, no puede dejar precios negativos o en cero." });
+    }
+
+    const resultado = await Joya.updateMany({}, [
+      { $set: { precio: { $round: [{ $multiply: ["$precio", factor] }, 2] } } }
+    ]);
+
+    res.status(200).json({
+      message: `Se redujeron los precios en un ${porcentaje}%`,
+      modificados: resultado.modifiedCount
+    });
+
+  } catch (err) {
+    console.error("Error al reducir precios:", err.message);
+    next(err);
+  }
+};
+

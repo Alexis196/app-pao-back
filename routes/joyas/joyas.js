@@ -5,7 +5,8 @@ import {
     actualizarJoya,
     eliminarJoya,
     obtenerUnaJoya,
-    aumentarPrecios
+    aumentarPrecios,
+    bajarPrecios
 } from '../../controllers/joyas-controller.js'
 
 const router = express.Router()
@@ -16,7 +17,9 @@ router.get('/:_id', obtenerUnaJoya)
 router.post('/', agregarJoya)
 
 router.put('/:_id', actualizarJoya)
+
 router.patch('/aumento-precio', aumentarPrecios)
+router.patch('/bajar-precio', bajarPrecios)
 
 router.delete('/:_id', eliminarJoya)
 

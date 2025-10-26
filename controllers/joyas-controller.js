@@ -2,14 +2,38 @@ import Joya from '../models/joyas-model.js';
 import mongoose from 'mongoose';
 
 export const obtenerJoyas = async (req, res, next) => {
-    try {
-        const joyas = await Joya.find();
-        res.json(joyas);
-    } catch (err) {
-        console.error(err.message);
-        next(err);
-    }
+  try {
+    // Parámetros de paginación (por defecto: página 1, máximo 20)
+    let { page = 1, limit = 10 } = req.query;
+
+    page = parseInt(page);
+    limit = Math.min(parseInt(limit), 10); // 🔒 No puede superar 20
+
+    // Calcular salto
+    const skip = (page - 1) * limit;
+
+    // Consultar con paginación
+    const joyas = await Joya.find().skip(skip).limit(limit);
+
+    // Obtener el total de documentos para calcular el número total de páginas
+    const total = await Joya.countDocuments();
+    const totalPaginas = Math.ceil(total / limit);
+
+    res.status(200).json({
+      message: "Joyas obtenidas correctamente",
+      joyas,
+      paginaActual: page,
+      totalPaginas,
+      total,
+      limite: limit
+    });
+
+  } catch (err) {
+    console.error("Error al obtener joyas:", err.message);
+    next(err);
+  }
 };
+
 
 export const agregarJoya = async (req, res, next) => {
     try {

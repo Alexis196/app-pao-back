@@ -5,8 +5,7 @@ const joyaSchema = new mongoose.Schema({
     producto: { type: String, required: true, unique: true },
     precio: { type: Number, required: true },
     cantidad: { type: Number, required: true },
-    descripcion: { type: String },
-    tipo: { type: String, required: true }
+    descripcion: { type: String }
 });
 
 const Joya = mongoose.model('Joya', joyaSchema, 'joyas');

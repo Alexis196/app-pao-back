@@ -3,36 +3,60 @@ import mongoose from 'mongoose';
 
 export const obtenerJoyas = async (req, res, next) => {
   try {
-    // Parámetros de paginación (por defecto: página 1, máximo 20)
-    let { page = 1, limit = 10 } = req.query;
+    // Parámetros de paginación
+    let { page = 1, limit = 10, search = '' } = req.query
 
-    page = parseInt(page);
-    limit = Math.min(parseInt(limit), 10); // 🔒 No puede superar 20
+    page = parseInt(page)
+    limit = Math.min(parseInt(limit), 10)
 
-    // Calcular salto
-    const skip = (page - 1) * limit;
+    const skip = (page - 1) * limit
 
-    // Consultar con paginación
-    const joyas = await Joya.find().skip(skip).limit(limit);
+    // 🔍 Filtro de búsqueda GLOBAL (producto + código numérico)
+    const filtro = search
+      ? {
+          $or: [
+            {
+              producto: {
+                $regex: search,
+                $options: 'i'
+              }
+            },
+            {
+              $expr: {
+                $regexMatch: {
+                  input: { $toString: '$codigo' },
+                  regex: search,
+                  options: 'i'
+                }
+              }
+            }
+          ]
+        }
+      : {}
 
-    // Obtener el total de documentos para calcular el número total de páginas
-    const total = await Joya.countDocuments();
-    const totalPaginas = Math.ceil(total / limit);
+    // Consulta con filtro + paginación
+    const joyas = await Joya.find(filtro)
+      .sort({ codigo: 1 })
+      .skip(skip)
+      .limit(limit)
+
+    // Total acorde al filtro
+    const total = await Joya.countDocuments(filtro)
+    const totalPaginas = Math.ceil(total / limit)
 
     res.status(200).json({
-      message: "Joyas obtenidas correctamente",
+      message: 'Joyas obtenidas correctamente',
       joyas,
       paginaActual: page,
       totalPaginas,
       total,
       limite: limit
-    });
-
+    })
   } catch (err) {
-    console.error("Error al obtener joyas:", err.message);
-    next(err);
+    console.error('Error al obtener joyas:', err.message)
+    next(err)
   }
-};
+}
 
 
 export const agregarJoya = async (req, res, next) => {
